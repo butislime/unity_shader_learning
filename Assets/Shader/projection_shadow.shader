@@ -3,6 +3,7 @@
     Properties
     {
         _MainTex ("Texture", 2D) = "white" {}
+		_ShadowColor ("ShadowColor", Color) = (0.5, 0.5, 0.5, 0.5)
     }
     SubShader
     {
@@ -34,6 +35,7 @@
             float4 _MainTex_ST;
 			sampler2D _ProjectionShadowMap;
 			float4x4 _ProjectionViewProj;
+			float4 _ShadowColor;
 
             v2f vert (appdata v)
             {
@@ -50,9 +52,8 @@
             fixed4 frag (v2f i) : SV_Target
             {
                 fixed4 col = tex2D(_MainTex, i.uv);
-				//col *= tex2D(_ProjectionShadowMap, (i.uv_shadow.xyz / i.uv_shadow.w).xy);
-				fixed4 shadow = tex2D(_ProjectionShadowMap, (i.uv_shadow.xyz / i.uv_shadow.w).xy);
-				return lerp(col, shadow, shadow.a);
+				fixed4 shadow = tex2D(_ProjectionShadowMap, (i.uv_shadow / i.uv_shadow.w).xy);
+				return lerp(col, col*_ShadowColor, shadow.a);
             }
             ENDCG
         }
