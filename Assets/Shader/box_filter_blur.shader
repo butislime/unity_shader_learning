@@ -10,7 +10,6 @@
         LOD 100
 
 		CGINCLUDE
-		#pragma vertex vert
 
 		#include "UnityCG.cginc"
 
@@ -52,10 +51,42 @@
 
 		ENDCG
 
+		Pass
+		{
+			CGPROGRAM
+			#pragma vertex vert_first
+			#pragma fragment frag_down
+
+			v2f vert_first (appdata v)
+			{
+				v2f o;
+				o.vertex = UnityObjectToClipPos(v.vertex);
+
+				// プラットフォーム差の吸収
+				#ifdef UNITY_UV_STARTS_AT_TOP
+				o.uv = float2(v.uv.x, 1 - v.uv.y);
+				#else
+				o.uv = v.uv;
+				#endif
+
+				return o;
+			}
+
+            fixed4 frag_down (v2f i) : SV_Target
+            {
+                fixed4 col = tex2D(_MainTex, i.uv);
+				// 1ピクセルずらし
+				col.rgb = sampleBox(i.uv, 2);
+                return col;
+            }
+			ENDCG
+		}
+
         Pass
         {
 			CGPROGRAM
 
+			#pragma vertex vert
 			#pragma fragment frag_down
 
             fixed4 frag_down (v2f i) : SV_Target
@@ -73,6 +104,7 @@
 		{
 			CGPROGRAM
 
+			#pragma vertex vert
 			#pragma fragment frag_up
 
 			fixed4 frag_up (v2f i) : SV_Target
